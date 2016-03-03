@@ -1,0 +1,149 @@
+require 'separator'
+
+grammar Cities
+  include Separator
+
+  rule cities
+      (~to)? to destination (~from)? from origin something      # в Лапенранту из Парижа
+    | (~origin)? origin (~destination)? destination something   # Париж Лапенранта
+    | (~destination)? destination something                     # Лапенранта
+  end
+
+  rule origin
+    city
+  end
+
+  rule destination
+    city
+  end
+
+  rule from
+    space (`из` | `с` | `от`) look_space
+  end
+
+  rule to
+    space (`в` | `на` | `до`) look_space
+  end
+
+  rule city
+    (space city:(bkk | dom | lpp | mow | par | led) look_space) {
+      def code
+        capture(:city).code
+      end
+
+      def name
+        capture(:city).name
+      end
+
+      def time_zone
+        capture(:city).time_zone
+      end
+    }
+  end
+
+  # Окончания склонений всех родов
+  # TODO: 3 склонение
+  rule affexes1
+    `а` | `я` | `ы` | `и` | `е` | `у` | `ю` | `ой` | `ёй` | `ей`
+  end
+
+  rule affexes2
+    (`а` | `я` | `у` | `ю` | `ом` | `ём` | `ем` | `е` | `о`)?
+  end
+
+  rule bkk
+    (`Бан` `г`? `кок` affexes2) {
+      def code
+        'BKK'
+      end
+
+      def name
+        'Бангкок'
+      end
+
+      def time_zone
+        'Asia/Bangkok'
+      end
+    }
+  end
+
+  rule dom
+    (`Доминик` affexes1) {
+      def code
+        'DOM'
+      end
+
+      def name
+        'Доминика'
+      end
+
+      def time_zone
+        'America/Dominica'
+      end
+    }
+  end
+
+  rule lpp
+    (`Лап` `п`? (`е` | `и`) (`э` | `е` | `и`)? `нрант` affexes1) {
+      def code
+        'LPP'
+      end
+
+      def name
+        'Лаппеэнранта'
+      end
+
+      def time_zone
+        'Europe/Helsinki'
+      end
+    }
+  end
+
+  rule mow
+    (`Москв` affexes1) {
+      def code
+        'MOW'
+      end
+
+      def name
+        'Москва'
+      end
+
+      def time_zone
+        'Europe/Moscow'
+      end
+    }
+  end
+
+  rule par
+    (`Париж` affexes2) {
+      def code
+        'PAR'
+      end
+
+      def name
+        'Париж'
+      end
+
+      def time_zone
+        'Europe/Paris'
+      end
+    }
+  end
+
+  rule led
+    ((`Санкт-`? `Петербург` | `Питер` | `Ленинград`) affexes2) {
+      def code
+        'LED'
+      end
+
+      def name
+        'Санкт-Петербург'
+      end
+
+      def time_zone
+        'Europe/Moscow'
+      end
+    }
+  end
+end

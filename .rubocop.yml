@@ -1,0 +1,11 @@
+# Rubocop settings for Webcaster
+# General project settings
+Rails:
+  Enabled: true
+
+AllCops:
+  TargetRubyVersion: 2.1
+
+# we have Russian language in comments
+Style/AsciiComments:
+  Enabled: false

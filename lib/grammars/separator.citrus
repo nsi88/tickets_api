@@ -1,0 +1,13 @@
+grammar Separator
+  rule space
+    [ \t]+
+  end
+
+  rule look_space
+    /(?=[ \t])/
+  end
+
+  rule something
+    /.*/
+  end
+end
