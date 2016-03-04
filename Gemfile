@@ -4,6 +4,7 @@ gem 'rails', '4.2.5.2'
 
 gem 'rails-api'
 gem 'citrus'
+gem 'mocha', group: :test
 
 # To use Jbuilder templates for JSON
 # gem 'jbuilder'

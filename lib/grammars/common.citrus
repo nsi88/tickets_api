@@ -1,0 +1,27 @@
+grammar Common
+  rule space
+    [ \t]+
+  end
+
+  rule look_space
+    /(?=[ \t])/
+  end
+
+  rule maybe_space
+    [ \t]*
+  end
+
+  rule something
+    /.*/
+  end
+
+  # Окончания склонений всех родов
+  # TODO: 3 склонение
+  rule affexes1
+    `а` | `я` | `ы` | `и` | `е` | `у` | `ю` | `ой` | `ёй` | `ей`
+  end
+
+  rule affexes2
+    (`а` | `я` | `у` | `ю` | `ом` | `ём` | `ем` | `е` | `о`)?
+  end
+end

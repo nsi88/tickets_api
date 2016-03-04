@@ -1,0 +1,261 @@
+# @return [Array] из одной или двух дат
+# @raise [Citrus::ParseError]
+# @raise [ArgumentError] Если указана невалидная дата
+
+require 'common'
+
+grammar Dates
+  include Common
+
+  rule dates
+    rel_dates | abs_dates
+  end
+
+  rule abs_dates
+    two_abs_dates | one_abs_date
+  end
+
+  # FIXME: для строки "с 30 по 15 марта" 30 тоже будет отнесено к марту
+  # TODO: учитывать тек. дату
+  rule two_abs_dates
+    ((~abs_date1)? abs_date1 (~abs_date2)? abs_date2 something) {
+      [
+        Date.new(
+          capture(:abs_date1).capture(:year).try(:value) ||
+            capture(:abs_date2).capture(:year).try(:value) ||
+            Date.today.year,
+          capture(:abs_date1).capture(:month).try(:value) ||
+            capture(:abs_date2).capture(:month).try(:value) ||
+            Date.today.month,
+          capture(:abs_date1).capture(:day_number).value
+        ),
+        Date.new(
+          capture(:abs_date2).capture(:year).try(:value) ||
+            capture(:abs_date1).capture(:year).try(:value) ||
+            Date.today.year,
+          capture(:abs_date2).capture(:month).try(:value) ||
+            capture(:abs_date1).capture(:month).try(:value) ||
+            Date.today.month,
+          capture(:abs_date2).capture(:day_number).value
+        )
+      ]
+    }
+  end
+
+  rule one_abs_date
+    ((~abs_date1)? abs_date1 something) {
+      [
+        Date.new(
+          capture(:abs_date1).capture(:year).try(:value) || Date.today.year,
+          capture(:abs_date1).capture(:month).try(:value) || Date.today.month,
+          capture(:abs_date1).capture(:day_number).value
+        )
+      ]
+    }
+  end
+
+  rule abs_date1
+    abs_date
+  end
+
+  rule abs_date2
+    abs_date
+  end
+
+  rule abs_date
+    day_number (month year?)?
+  end
+
+  rule day_number
+    (space (
+      [1-2] [0-9]
+    | '3' [0-1]
+    | '0'? [1-9]
+    ) look_space) {
+      to_str.to_i
+    }
+  end
+
+  rule month
+    month_name | month_number
+  end
+
+  rule month_number
+    (space (
+      '1' [0-2]
+    | '0'? [1-9]
+    ) look_space) {
+      to_str.to_i
+    }
+  end
+
+  rule month_name
+    (space month_number:(
+      jan | feb | mar | apr | may | june | july | aug | sept | oct | nov | dec
+    ) look_space) {
+      capture(:month_number).value
+    }
+  end
+
+  rule jan
+    (`январ` (`ь` | affexes2)) { 1 }
+  end
+
+  rule feb
+    (`феврал` (`ь` | affexes2)) { 2 }
+  end
+
+  rule mar
+    (`март` affexes2) { 3 }
+  end
+
+  rule apr
+    (`апрел` (`ь` | affexes2)) { 4 }
+  end
+
+  rule may
+    (`ма` (`й` | affexes2)) { 5 }
+  end
+
+  rule june
+    (`июн` (`ь` | affexes2)) { 6 }
+  end
+
+  rule july
+    (`июл` (`ь` | affexes2)) { 7 }
+  end
+
+  rule aug
+    (`август` affexes2) { 8 }
+  end
+
+  rule sept
+    (`сентябр` (`ь` | affexes2)) { 9 }
+  end
+
+  rule oct
+    (`октябр` ( `ь` | affexes2)) { 10 }
+  end
+
+  rule nov
+    (`ноябр` (`ь` | affexes2)) { 11 }
+  end
+
+  rule dec
+    (`декабр` (`ь` | affexes2)) { 12 }
+  end
+
+  rule year
+    (space [2-9] [0-9]3*3 look_space) { to_str.to_i }
+  end
+
+  rule rel_dates
+    ((~rel_date)? rel_date something) {
+      capture(:rel_date).value
+    }
+  end
+
+  rule rel_date
+    (space dates:(
+      holidays
+    | holiday
+    | after_after_tomorrow
+    | after_tomorrow
+    | tomorrow
+    | today
+    | in_n_days
+    | on_day
+    ) look_space) {
+      capture(:dates).value
+    }
+  end
+
+  rule holidays
+    (`выходны` (`е` | `х` | `м` | `ми`)) {
+      diff = 5 - Date.today.wday
+      diff += 7 if diff <= 0
+      near_friday = Date.today + diff.days
+      [near_friday, near_friday + 2.days]
+    }
+  end
+
+  # Если сегодня суббота ищем на воскресенье, иначе на субботу
+  rule holiday
+    (`выходн` (`ой` | `ого` | `ому` | `ым` | `ом`)) {
+      if (Date.today.saturday?)
+        [Date.today.next_day]
+      else
+        # TODO: near_saturday method
+        [Date.today + (6 - Date.today.wday).days]
+      end
+    }
+  end
+
+  rule after_after_tomorrow
+    (`после` maybe_space `после` maybe_space `завтра`) {
+      [Date.today + 3.days]
+    }
+  end
+
+  rule after_tomorrow
+    (`после` maybe_space `завтра`) {
+      [Date.today + 2.days]
+    }
+  end
+
+  rule tomorrow
+    `завтра` {
+      [Date.today + 1.day]
+    }
+  end
+
+  rule today
+    `сегодня` {
+      [Date.today]
+    }
+  end
+
+  rule in_n_days
+    (`через` space days:([1-9] [0-9]?) space (`день` | (`дн` (`я` | `ей`)))) {
+      [Date.today + (capture(:days).to_str.to_i + 1).days]
+    }
+  end
+
+  # NOTE: Если в среду спросить про среду, будет возвращена след. среда, а не тек.
+  # XXX: Если убрать look_space, нельзя будет вызвать value, не зациклившись
+  rule on_day
+    (wday:(mon | tue | wed | thu |  fri | sat | sun) look_space) {
+      diff = capture(:wday).value - Date.today.wday
+      diff += 7 if diff <= 0
+      [Date.today + diff.days]
+    }
+  end
+
+  rule mon
+    (`понедельник` affexes2) { 1 }
+  end
+
+  rule tue
+    (`вторник` affexes2) { 2 }
+  end
+
+  rule wed
+    (`сред` affexes1) { 3 }
+  end
+
+  rule thu
+    (`четверг` affexes2) { 4 }
+  end
+
+  rule fri
+    (`пятниц` affexes1) { 5 }
+  end
+
+  rule sat
+    (`суббот` affexes1) { 6 }
+  end
+
+  rule sun
+    (`воскресень` affexes2) { 0 }
+  end
+end

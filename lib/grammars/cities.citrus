@@ -1,7 +1,14 @@
-require 'separator'
+# @return [Citrus::Match] c captures :origin и :destination
+# Destination может не быть
+# В captures добавлены методы code, name, time_zone
+# @raise [Citrus::ParseError]
+# @example Cities.parse('Париж').capture(:destination).code
+# вернёт 'PAR'
+
+require 'common'
 
 grammar Cities
-  include Separator
+  include Common
 
   rule cities
       (~to)? to destination (~from)? from origin something      # в Лапенранту из Парижа
@@ -39,16 +46,6 @@ grammar Cities
         capture(:city).time_zone
       end
     }
-  end
-
-  # Окончания склонений всех родов
-  # TODO: 3 склонение
-  rule affexes1
-    `а` | `я` | `ы` | `и` | `е` | `у` | `ю` | `ой` | `ёй` | `ей`
-  end
-
-  rule affexes2
-    (`а` | `я` | `у` | `ю` | `ом` | `ём` | `ем` | `е` | `о`)?
   end
 
   rule bkk

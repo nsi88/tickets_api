@@ -11,3 +11,4 @@ module Citrus
 end
 
 Citrus.load File.expand_path('../../../lib/grammars/cities', __FILE__)
+Citrus.load File.expand_path('../../../lib/grammars/dates', __FILE__)
