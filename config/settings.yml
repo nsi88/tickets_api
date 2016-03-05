@@ -1,0 +1,6 @@
+development: &development
+  host: 127.0.0.1:3000
+
+staging:
+  <<: *development
+  host: 85.143.221.166

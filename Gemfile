@@ -4,6 +4,7 @@ gem 'rails', '4.2.5.2'
 
 gem 'rails-api'
 gem 'citrus'
+gem 'swagger-blocks'
 
 gem 'mocha', group: :test
 
