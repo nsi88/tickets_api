@@ -1,4 +1,5 @@
-# @return [Array] из одной или двух дат
+# @return [Citrus::Match] с методом value
+# Метод value возвращает масси из одной или двух дат
 # @raise [Citrus::ParseError]
 # @raise [ArgumentError] Если указана невалидная дата
 
