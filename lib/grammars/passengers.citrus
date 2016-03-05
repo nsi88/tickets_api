@@ -1,0 +1,146 @@
+# @note Поиск для взрослых/детей/младенцев выполняется отдельно
+# @todo Сделать одно общее правило поиска
+# @return [Citrus::Match] c методами to_str и value
+# to_str возвращает найденное совпадение
+# value - кол-во пассажиров указанного типа
+# @example Passengers.parse('трое детей десятеро взрослых', root: :adults).value
+# вернёт 10
+# @example Passengers.parse('трое детей десятеро взрослых', root: :adults).value
+# вернёт " десятеро взрослых"
+# @raise [Citrus::ParseError]
+
+require 'common'
+
+grammar Passengers
+  include Common
+
+  rule adults
+    ((~adults_count)? adults_count something) {
+      def value
+        capture(:adults_count).value
+      end
+
+      def to_str
+        capture(:adults_count).to_str
+      end
+    }
+  end
+
+  rule children
+    ((~children_count)? children_count something) {
+      def value
+        capture(:children_count).value
+      end
+
+      def to_str
+        capture(:children_count).to_str
+      end
+    }
+  end
+
+  rule infants
+    ((~infants_count)? infants_count something) {
+      def value
+        capture(:infants_count).value
+      end
+
+      def to_str
+        capture(:infants_count).to_str
+      end
+    }
+  end
+
+  rule adults_count
+    quantitive_adults | collective_adults
+  end
+
+  rule quantitive_adults
+    (quantitive adults_word) { capture(:quantitive).value }
+  end
+
+  rule collective_adults
+    (collective (adults_word | !(children_word | infants_word))) {
+      capture(:collective).value
+    }
+  end
+
+  rule children_count
+    (numeral children_word) { capture(:numeral).value }
+  end
+
+  rule infants_count
+    (numeral infants_word) { capture(:numeral).value }
+  end
+
+  rule numeral
+    quantitive | collective
+  end
+
+  rule quantitive
+    (space [1-9] [0-9]? look_space) { to_str.to_i }
+  end
+
+  rule collective
+    (space count:(
+      two | three | four | five | six | seven | eight | nine | ten
+    ) look_space) {
+      capture(:count).value
+    }
+  end
+
+  rule two
+    (`двое` | `вдво` (`е` | `ё`) `м`) { 2 }
+  end
+
+  rule three
+    (`трое` | `втро` (`е` | `ё`) `м`) { 3 }
+  end
+
+  rule four
+    (`четверо` | `вчетвером`) { 4 }
+  end
+
+  rule five
+    (`пятеро` | `впятером`) { 5 }
+  end
+
+  rule six
+    (`шестеро` | `вшестером`) { 6 }
+  end
+
+  rule seven
+    (`семеро` | `всемером`) { 7 }
+  end
+
+  rule eight
+    (`восьмеро` | `ввосьмером`) { 8 }
+  end
+
+  rule nine
+    (`девятеро` | `вдевятером`) { 9 }
+  end
+
+  rule ten
+    (`десятеро` | `вдесятером`) { 10 }
+  end
+
+  rule children_word
+    space (
+      `реб` (`е` | `ё`) `н` (`ок` | `ка` | `ку` | `ком` | `ке`)
+    | `дет` (`и` | `ей` | `ям` | `ьми` | `ях`)
+    ) look_space
+  end
+
+  rule infants_word
+    space (
+      `младен` (`ец` | `ци` | `ца` | `цев` | `цу` | `цам` | `цем` | `цами` | `це` | `цах`)
+    ) look_space
+  end
+
+  rule adults_word
+    space (
+      `взросл` (`ый` | `ые` | `ого` | `ых` | `ому` | `ым` | `ыми` | `ом` | `ых`)
+    | `пассажир` (`а` | `ов` | `у` | `ам` | `ом` | `ами` | `е` | `ах`)
+    ) look_space
+  end
+end

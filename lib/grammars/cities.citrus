@@ -1,8 +1,8 @@
-# @return [Citrus::Match] c captures :origin и :destination
-# Destination может не быть
-# В captures добавлены методы code, name, time_zone
+# @return [Citrus::Match] c методами origin и destination
+# Origin может быть nil
+# Origin и destination содержат методы code, name, time_zone
 # @raise [Citrus::ParseError]
-# @example Cities.parse('Париж').capture(:destination).code
+# @example Cities.parse('Париж').destination.code
 # вернёт 'PAR'
 
 require 'common'
@@ -11,9 +11,19 @@ grammar Cities
   include Common
 
   rule cities
+    (
       (~to)? to destination (~from)? from origin something      # в Лапенранту из Парижа
     | (~origin)? origin (~destination)? destination something   # Париж Лапенранта
     | (~destination)? destination something                     # Лапенранта
+    ) {
+      def origin
+        capture(:origin)
+      end
+
+      def destination
+        capture(:destination)
+      end
+    }
   end
 
   rule origin

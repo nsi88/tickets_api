@@ -23,9 +23,9 @@ class CitiesTest < ActiveSupport::TestCase
   # @param [String] iata-код города
   def check(src, origin, destination)
     m = Cities.parse(src)
-    assert_equal origin.to_s, m.capture(:origin).code,
-                 "Wrong origin #{m.capture(:origin).code} for '#{src}'" if origin
-    assert_equal destination.to_s, m.capture(:destination).code,
-                 "Wrong destination #{m.capture(:destination).code} for '#{src}'"
+    assert_equal origin.to_s, m.origin.code,
+                 "Wrong origin #{m.origin.code} for '#{src}'" if origin
+    assert_equal destination.to_s, m.destination.code,
+                 "Wrong destination #{m.destination.code} for '#{src}'"
   end
 end
