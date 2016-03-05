@@ -13,3 +13,4 @@ end
 Citrus.load File.expand_path('../../../lib/grammars/cities', __FILE__)
 Citrus.load File.expand_path('../../../lib/grammars/dates', __FILE__)
 Citrus.load File.expand_path('../../../lib/grammars/passengers', __FILE__)
+Citrus.load File.expand_path('../../../lib/grammars/trip_class', __FILE__)

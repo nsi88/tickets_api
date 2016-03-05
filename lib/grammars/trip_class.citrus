@@ -1,0 +1,31 @@
+# @return [Citrus::Match] c методами to_str и value
+# to_str возвращает найденное совпадение
+# value - Y для эконом класса, C для бизнес
+# @example TripClass.parse('из Бангкока в Доминику с 26 по 29 декабря вдвоём бизнес').value
+# вернёт C
+
+require 'common'
+
+grammar TripClass
+  include Common
+
+  rule trip_class
+    econom | business
+  end
+
+  rule econom
+    ((~econom_pattern)? econom_pattern something) { 'Y' }
+  end
+
+  rule business
+    ((~business_pattern)? business_pattern something) { 'C' }
+  end
+
+  rule econom_pattern
+    space `эконом` look_space
+  end
+
+  rule business_pattern
+    space `бизнес` look_space
+  end
+end
