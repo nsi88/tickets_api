@@ -65,7 +65,9 @@ class ApplicationController < ActionController::API
     return render_error('Missing parameter q') if params[:q].blank?
     render json: {
       search_options: {
-        passengers: passengers,
+        # NOTE: удаляем найденную информацию о пассажирах из строки поиска
+        # во избежание конфликтов с датой
+        passengers: extract_passengers,
         segments: segments,
         trip_class: trip_class
       }
@@ -97,28 +99,34 @@ class ApplicationController < ActionController::API
     render json: { error: { code: code, message: message } }
   end
 
-  def passengers
+  def extract_passengers
     {
-      adults: adults,
-      children: children,
-      infants: infants
+      adults: extract_adults,
+      children: extract_children,
+      infants: extract_infants
     }
   end
 
-  def adults
-    Passengers.parse(params[:q], root: :adults).value
+  def extract_adults
+    m = Passengers.parse(params[:q], root: :adults)
+    params[:q].gsub!(m.to_str.strip, '')
+    m.value
   rescue Citrus::ParseError
     1
   end
 
-  def children
-    Passengers.parse(params[:q], root: :children).value
+  def extract_children
+    m = Passengers.parse(params[:q], root: :children)
+    params[:q].gsub!(m.to_str.strip, '')
+    m.value
   rescue Citrus::ParseError
     0
   end
 
-  def infants
-    Passengers.parse(params[:q], root: :infants).value
+  def extract_infants
+    m = Passengers.parse(params[:q], root: :infants)
+    params[:q].gsub!(m.to_str.strip, '')
+    m.value
   rescue Citrus::ParseError
     0
   end

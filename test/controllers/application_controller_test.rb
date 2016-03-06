@@ -27,5 +27,8 @@ class ApplicationControllerTest < ActionController::TestCase
 
     get :search_options, q: 'В Питер 23-го'
     assert_equal invalid_param_error, response.body
+
+    get :search_options, q: '12 пассажиров 13 декабря летят в москву'
+    assert_equal JSON.parse('{"search_options":{"passengers":{"adults":12,"children":0,"infants":0},"segments":[{"date":"2016-12-13","origin":"LED","destination":"MOW"}],"trip_class":"Y"}}'), JSON.parse(response.body)
   end
 end
