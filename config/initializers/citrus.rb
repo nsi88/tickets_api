@@ -8,6 +8,12 @@ module Citrus
       orig_parse(' ' + source + ' ', options)
     end
   end
+
+  # Внутри грамматик можно include-ить только другие грамматики
+  # и нельзя объявлять методы
+  class Match
+    include DatesHelper
+  end
 end
 
 Citrus.load File.expand_path('../../../lib/grammars/cities', __FILE__)
