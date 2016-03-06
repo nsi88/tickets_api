@@ -74,7 +74,6 @@ class ApplicationController < ActionController::API
     }
   rescue Citrus::ParseError, ArgumentError => e
     Rails.logger.error e.message
-    Rails.logger.info "Cannot parse '#{params[:q]}'"
     render_error('Invalid parameter q')
   end
 
