@@ -70,7 +70,7 @@ class ApplicationController < ActionController::API
         trip_class: trip_class
       }
     }
-  rescue Citrus::ParseError => e
+  rescue Citrus::ParseError, ArgumentError => e
     Rails.logger.error e.message
     Rails.logger.info "Cannot parse '#{params[:q]}'"
     render_error('Invalid parameter q')
@@ -142,11 +142,11 @@ class ApplicationController < ActionController::API
     end
   end
 
-  # FIXME: Возможен поиск из Питера в Питер
   def segments
     cities = Cities.parse(params[:q])
     origin = cities.origin.try(:code) || 'LED'
     destination = cities.destination.code
+    fail ArgumentError, "Origin == destination == #{origin}" if origin == destination
     begin
       dates = Dates.parse(params[:q]).value
     rescue Citrus::ParseError, ArgumentError
